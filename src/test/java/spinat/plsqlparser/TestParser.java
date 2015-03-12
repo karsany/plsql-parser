@@ -1,12 +1,11 @@
 package spinat.plsqlparser;
 
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -19,7 +18,7 @@ public class TestParser {
 
     Seq scan(String s) {
         ArrayList<Token> a = Scanner.scanAll(s);
-        ArrayList<Token> r = new ArrayList<>();
+        ArrayList<Token> r = new ArrayList<Token>();
         for (Token t : a) {
             if (Scanner.isRelevant(t)) {
                 r.add(t);
@@ -216,8 +215,7 @@ public class TestParser {
     @Test
     public void test7() throws Exception {
         Path dir = Paths.get("c:/users/rav/documents/plsql-repo/demo_feuerstein");
-        try (DirectoryStream<Path> stream
-                = Files.newDirectoryStream(dir, "*.pks")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.pks")) {
             for (Path entry : stream) {
                 System.out.println(entry.getFileName());
                 testPackage(dir.resolve(entry).toString());

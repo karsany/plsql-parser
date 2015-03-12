@@ -1,12 +1,13 @@
 package spinat.plsqlparser;
 
+import spinat.plsqlparser.Ast.Expression;
+import spinat.plsqlparser.Ast.Statement;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import spinat.plsqlparser.Ast.Expression;
-import spinat.plsqlparser.Ast.Statement;
 
 public class Parser {
 
@@ -99,7 +100,7 @@ public class Parser {
         public Res<Integer> par(Seq s) {
             Res<String> r = p.pa(s);
             if (r != null) {
-                return new Res<>(new Integer(r.v), r.next);
+                return new Res<Integer>(new Integer(r.v), r.next);
             } else {
                 return null;
             }
@@ -129,7 +130,7 @@ public class Parser {
             }
             Res<String> r = p.pa(s);
             if (r != null) {
-                return new Res<>(new Integer(r.v) * sign, r.next);
+                return new Res<Integer>(new Integer(r.v) * sign, r.next);
             } else {
                 return null;
             }
@@ -150,10 +151,10 @@ public class Parser {
                 if (badwords.contains(t.str.toLowerCase())) {
                     return null;
                 } else {
-                    return new Res<>(new Ast.Ident(t.str.toUpperCase()), s.tail());
+                    return new Res<Ast.Ident>(new Ast.Ident(t.str.toUpperCase()), s.tail());
                 }
             } else if (t.ttype == TokenType.QIdent) {
-                return new Res<>(new Ast.Ident(t.str.substring(1, t.str.length() - 1)), s.tail());
+                return new Res<Ast.Ident>(new Ast.Ident(t.str.substring(1, t.str.length() - 1)), s.tail());
             } else {
                 return null;
             }
@@ -170,7 +171,7 @@ public class Parser {
         @Override
         public Res<String> par(Seq s) {
             if (s.head().ttype == TokenType.Ident) {
-                return new Res<>(s.head().str.toLowerCase(), s.tail());
+                return new Res<String>(s.head().str.toLowerCase(), s.tail());
             } else {
                 return null;
             }
@@ -204,7 +205,7 @@ public class Parser {
                 default:
                     return null;
             }
-            return new Res<>(o, s.tail());
+            return new Res<Ast.CmpOperator>(o, s.tail());
         }
     };
 
@@ -213,7 +214,7 @@ public class Parser {
         @Override
         public Res<BigInteger> par(Seq s) {
             if (s.head().ttype == TokenType.Int) {
-                return new Res<>(new BigInteger(s.head().str), s.tail());
+                return new Res<BigInteger>(new BigInteger(s.head().str), s.tail());
             } else {
                 return null;
             }
@@ -371,7 +372,7 @@ public class Parser {
         Res<List<Expression>> r4 = c.withParensCommit(c.sep1(pExpr, c.pComma), r3.next);
         Ast.Expression e = new Ast.InExpression(r.v, r4.v);
         if (r2.v == null) {
-            return new Res<>(e, r4.next);
+            return new Res<Expression>(e, r4.next);
         } else {
             return new Res<Expression>(new Ast.NotExpr(e), r4.next);
         }
@@ -418,7 +419,7 @@ public class Parser {
                     binop = Ast.Binop.CONCAT;
                     break;
                 default:
-                    return new Res<>(e, ss);
+                    return new Res<Expression>(e, ss);
             }
             Res<Expression> rx = paMulExpression(ss.tail());
             must(rx, ss.tail(), "expecting an expression");
@@ -448,10 +449,10 @@ public class Parser {
                         binop = Ast.Binop.MOD;
                         break;
                     } else {
-                        return new Res<>(e, ss);
+                        return new Res<Expression>(e, ss);
                     }
                 default:
-                    return new Res<>(e, ss);
+                    return new Res<Expression>(e, ss);
             }
             Res<Expression> rx = paUnarySignExpr(ss.tail());
             must(rx, ss.tail(), "expecting an expression");
@@ -524,7 +525,7 @@ public class Parser {
 
         if (tt == TokenType.LParen) {
             Res<Expression> r = c.withParensCommit(pExpr, s);
-            return new Res<>(r.v, r.next);
+            return new Res<Expression>(r.v, r.next);
         }
         if (tt == TokenType.DollarDollarIdent) {
             String str = s.head().str.substring(2);
@@ -581,7 +582,7 @@ public class Parser {
             ss = r0.next;
             em = null;
         }
-        List<Ast.CaseExpressionPart> l = new ArrayList<>();
+        List<Ast.CaseExpressionPart> l = new ArrayList<Ast.CaseExpressionPart>();
         while (true) {
             Res<String> r2 = c.forkw("when").pa(ss);
             if (r2 == null) {
@@ -626,7 +627,7 @@ public class Parser {
             if (r == null) {
                 return null;
             }
-            return new Res<>(new Ast.LValue(r.v), r.next);
+            return new Res<Ast.LValue>(new Ast.LValue(r.v), r.next);
         }
     };
 
@@ -635,7 +636,7 @@ public class Parser {
         if (rident == null) {
             return null;
         }
-        ArrayList<Ast.CallPart> l = new ArrayList<>();
+        ArrayList<Ast.CallPart> l = new ArrayList<Ast.CallPart>();
         l.add(new Ast.Component(rident.v));
         Seq next = rident.next;
         while (true) {
@@ -731,9 +732,9 @@ public class Parser {
                 return null;
             }
             if ((r1.v.f1 == null)) {
-                return new Res<>(new Ast.ActualParam(r1.v.f2, null), r1.next);
+                return new Res<Ast.ActualParam>(new Ast.ActualParam(r1.v.f2, null), r1.next);
             } else {
-                return new Res<>(new Ast.ActualParam(r1.v.f2, r1.v.f1.f1.val), r1.next);
+                return new Res<Ast.ActualParam>(new Ast.ActualParam(r1.v.f2, r1.v.f1.f1.val), r1.next);
             }
 
         }
@@ -853,11 +854,11 @@ public class Parser {
         }
         Res<String> r2 = c.pDot.pa(r.next);
         if (r2 == null) {
-            return new Res<>(new Ast.ObjectName(null, r.v), r.next);
+            return new Res<Ast.ObjectName>(new Ast.ObjectName(null, r.v), r.next);
         }
         Res<Ast.Ident> r3 = pIdent.pa(r2.next);
         must(r3, r2.next, "expecting ident");
-        return new Res<>(new Ast.ObjectName(r.v, r3.v), r3.next);
+        return new Res<Ast.ObjectName>(new Ast.ObjectName(r.v, r3.v), r3.next);
     }
 
     public Res<Boolean> paCreateOrReplace(Seq s) {
@@ -866,7 +867,7 @@ public class Parser {
             return null;
         }
         Res<String> r2 = c.opt(c.forkw2("or", "replace")).pa(r.next);
-        return new Res<>(r2.v == null, r2.next);
+        return new Res<Boolean>(r2.v == null, r2.next);
     }
 
     /*
@@ -922,7 +923,7 @@ public class Parser {
                     Res<T4<Ast.DataType, Boolean, String, Expression>> r2
                     = c.seq4(pDataType, c.bopt(pNotNull), pAssignOrDefault, pExpr).pa(r.next);
                     must(r2, r.next, "expecting constant declaration");
-                    return new Res<>(new T3<>(r2.v.f1, r2.v.f2, r2.v.f4), r2.next);
+                    return new Res<T3<Ast.DataType, Boolean, Expression>>(new T3<Ast.DataType, Boolean, Expression>(r2.v.f1, r2.v.f2, r2.v.f4), r2.next);
                 }
 
             };
@@ -969,9 +970,9 @@ public class Parser {
             }
             Res<T3<Boolean, String, Ast.Expression>> r2 = c.seq3(c.bopt(pNotNull), pAssignOrDefault, pExpr).pa(r.next);
             if (r2 == null) {
-                return new Res<>(new Ast.RecordField(r.v.f1, r.v.f2, false, null), r.next);
+                return new Res<Ast.RecordField>(new Ast.RecordField(r.v.f1, r.v.f2, false, null), r.next);
             } else {
-                return new Res<>(new Ast.RecordField(r.v.f1, r.v.f2, r2.v.f1, r2.v.f3), r2.next);
+                return new Res<Ast.RecordField>(new Ast.RecordField(r.v.f1, r.v.f2, r2.v.f1, r2.v.f3), r2.next);
             }
         }
 
@@ -1085,11 +1086,11 @@ public class Parser {
         protected Res<T2<Integer, Integer>> par(Seq s) {
             Res<String> r = pkw_range.pa(s);
             if (r == null) {
-                return new Res<>(null, s);
+                return new Res<T2<Integer, Integer>>(null, s);
             }
             Res<T3<Integer, String, Integer>> r2 = c.seq3(pInteger, c.pDotDot, pInteger).pa(r.next);
             must(r2, r.next, "expectint int .. int ");
-            return new Res<>(new T2<Integer, Integer>(r2.v.f1, r2.v.f3), r2.next);
+            return new Res<T2<Integer, Integer>>(new T2<Integer, Integer>(r2.v.f1, r2.v.f3), r2.next);
         }
     };
 
@@ -1113,18 +1114,18 @@ public class Parser {
         Res<String> r = pkw_in_out.pa(s);
         if (r != null) {
             Res<Boolean> r2 = c.bopt(c.forkw("nocopy")).pa(r.next);
-            return new Res<>(new Ast.ParamMode(Ast.ParamModeType.INOUT, r2.v), r2.next);
+            return new Res<Ast.ParamMode>(new Ast.ParamMode(Ast.ParamModeType.INOUT, r2.v), r2.next);
         }
         Res<String> r3 = pkw_in.pa(s);
         if (r3 != null) {
-            return new Res<>(new Ast.ParamMode(Ast.ParamModeType.IN, false), r3.next);
+            return new Res<Ast.ParamMode>(new Ast.ParamMode(Ast.ParamModeType.IN, false), r3.next);
         }
         Res<String> r4 = pkw_out.pa(s);
         if (r4 != null) {
             Res<Boolean> r5 = c.bopt(pkw_nocopy).pa(r4.next);
-            return new Res<>(new Ast.ParamMode(Ast.ParamModeType.OUT, r5.v), r5.next);
+            return new Res<Ast.ParamMode>(new Ast.ParamMode(Ast.ParamModeType.OUT, r5.v), r5.next);
         }
-        return new Res<>(null, s);
+        return new Res<Ast.ParamMode>(null, s);
     }
 
 //    fun pCharacterSet s =
@@ -1134,10 +1135,10 @@ public class Parser {
     public Res<Boolean> paCSOption(Seq s) {
         Res<String> r = pkw_character_set.pa(s);
         if (r == null) {
-            return new Res<>(false, s);
+            return new Res<Boolean>(false, s);
         }
         Res<String> r2 = c.mustp(c.forkw("any_cs"), "expecting 'any_cs'").pa(r.next);
-        return new Res<>(true, r2.next);
+        return new Res<Boolean>(true, r2.next);
     }
 
     //    seq5(pIdent,opt(pParamMode),pDataType,opt pCharacterSet,opt(commit(pAssignOrDefault,pExpr))),
@@ -1153,13 +1154,13 @@ public class Parser {
             Res<Ast.DataType> r3 = c.mustp(pDataType, "expecting datatype").pa(r2.next);
             Res<Boolean> r4 = paCSOption(r3.next);
             Res<Ast.Expression> r5 = c.opt(c.commit(pAssignOrDefault, pExpr)).pa(r4.next);
-            return new Res<>(new Ast.Parameter(r.v, r3.v, r2.v, r5.v), r5.next);
+            return new Res<Ast.Parameter>(new Ast.Parameter(r.v, r3.v, r2.v, r5.v), r5.next);
         }
     };
 
     public Res<List<String>> paFunctionAttributes(Seq s) {
         //kw "deterministic",kw "pipelined",kw "parallel_enable",kw "result_cache"]),
-        List<String> l = new ArrayList<>();
+        List<String> l = new ArrayList<String>();
         Seq next = s;
         while (true) {
             Res<String> r = c.token(TokenType.Ident).pa(next);
@@ -1173,7 +1174,7 @@ public class Parser {
                 break;
             }
         }
-        return new Res<>(l, next);
+        return new Res<List<String>>(l, next);
     }
     /*
      r(commit(kw "function",
@@ -1196,7 +1197,7 @@ public class Parser {
         List<Ast.Parameter> params;
         Seq next;
         if (r3 == null) {
-            params = new ArrayList<>();
+            params = new ArrayList<Ast.Parameter>();
             next = r2.next;
         } else {
             params = r3.v;
@@ -1205,7 +1206,7 @@ public class Parser {
         Res<String> r4 = pkw_return.pa(next);
         Res<Ast.DataType> r5 = pDataType.pa(r4.next);
         Res<List<String>> r6 = paFunctionAttributes(r5.next);
-        return new Res<>(new Ast.FunctionHeading(r2.v, params, r5.v, r6.v), r6.next);
+        return new Res<Ast.FunctionHeading>(new Ast.FunctionHeading(r2.v, params, r5.v, r6.v), r6.next);
     }
 
     /*
@@ -1222,9 +1223,9 @@ public class Parser {
         Res<List<Ast.Parameter>> r3 = c.withParensCommit(c.sep1(pParameter, c.pComma), r2.next);
 
         if (r3 == null) {
-            return new Res<>(new Ast.ProcedureHeading(r2.v, new ArrayList<Ast.Parameter>()), r2.next);
+            return new Res<Ast.ProcedureHeading>(new Ast.ProcedureHeading(r2.v, new ArrayList<Ast.Parameter>()), r2.next);
         } else {
-            return new Res<>(new Ast.ProcedureHeading(r2.v, r3.v), r3.next);
+            return new Res<Ast.ProcedureHeading>(new Ast.ProcedureHeading(r2.v, r3.v), r3.next);
         }
     }
 
@@ -1235,7 +1236,7 @@ public class Parser {
             if (s.head().ttype == TokenType.Semi || s.head().ttype == TokenType.TheEnd) {
                 return null;
             } else {
-                return new Res<>(s.head(), s.tail());
+                return new Res<Token>(s.head(), s.tail());
             }
         }
     };
@@ -1264,7 +1265,7 @@ public class Parser {
             if (s.head().ttype == TokenType.String) {
                 String s1 = s.head().str;
                 String s2 = s1.substring(1, s1.length() - 1);
-                return new Res<>(s2.replace("''", "'"), s.tail());
+                return new Res<String>(s2.replace("''", "'"), s.tail());
             }
             Res<String> r = justkw.pa(s);
             if (r == null) {
@@ -1303,7 +1304,7 @@ public class Parser {
 
     public Res<List<Token>> paBalancedParenAndNoSemi(Seq s) {
         int level = 0;
-        List<Token> acc = new ArrayList<>();
+        List<Token> acc = new ArrayList<Token>();
         Seq next = s;
         while (true) {
             switch (next.head().ttype) {
@@ -1312,7 +1313,7 @@ public class Parser {
                     if (level > 0) {
                         throw new ParseException("parens not balanced", next);
                     } else {
-                        return new Res<>(acc, next);
+                        return new Res<List<Token>>(acc, next);
                     }
                 case LParen:
                     level++;
@@ -1321,7 +1322,7 @@ public class Parser {
                     break;
                 case RParen:
                     if (level == 0) {
-                        return new Res<>(acc, next);
+                        return new Res<List<Token>>(acc, next);
                     } else {
                         level--;
                         acc.add(next.head());
@@ -1379,7 +1380,7 @@ public class Parser {
             // fixme: java is fixed? 
             Res<T3<String, String, String>> r2 = c.seq3(c.forkw("java"), c.forkw("name"), c.token(TokenType.String)).pa(r.next);
             must(r2, r.next, "expecting java name '...' ");
-            return new Res<>(new T2<String, String>("java", r2.v.f3), r2.next);
+            return new Res<T2<String, String>>(new T2<String, String>("java", r2.v.f3), r2.next);
         }
     };
 
@@ -1458,23 +1459,22 @@ public class Parser {
             Res<String> r = justkw.pa(s);
             if (r != null) {
                 String word = r.v.toLowerCase();
-                switch (word) {
-                    case "begin":
-                    case "end":
-                        return null;
-                    case "type":
-                        return paTypeDefinition(s);
-                    case "subtype":
-                        return paSubTypeDeclaration(s);
-                    case "procedure":
-                        return paProcedureDefinitionOrDeclaration(s);
-                    case "function":
-                        return paFunctionDefinitionOrDeclaration(s);
-                    case "pragma":
-                        return paPragma(s);
-                    case "cursor":
-                        return paCursorDefinition(s);
-                    default: ;
+                if (word.equals("begin") || word.equals("end")) {
+                    return null;
+                } else if (word.equals("type")) {
+                    return paTypeDefinition(s);
+                } else if (word.equals("subtype")) {
+                    return paSubTypeDeclaration(s);
+                } else if (word.equals("procedure")) {
+                    return paProcedureDefinitionOrDeclaration(s);
+                } else if (word.equals("function")) {
+                    return paFunctionDefinitionOrDeclaration(s);
+                } else if (word.equals("pragma")) {
+                    return paPragma(s);
+                } else if (word.equals("cursor")) {
+                    return paCursorDefinition(s);
+                } else {
+                    ;
                 }
             }
             // variable or exception declaration
@@ -1495,12 +1495,12 @@ public class Parser {
      *)
      */
     public Res<List<Ast.Declaration>> paDeclarations(Seq s) {
-        List<Ast.Declaration> res = new ArrayList<>();
+        List<Ast.Declaration> res = new ArrayList<Ast.Declaration>();
         Seq seq = s;
         while (true) {
             Res<Ast.Declaration> r = pDeclaration.pa(seq);
             if (r == null) {
-                return new Res<>(res, seq);
+                return new Res<List<Ast.Declaration>>(res, seq);
             }
             Res rs = c.mustp(c.pSemi, "expecting a ;").pa(r.next);
             res.add(r.v);
@@ -1531,7 +1531,7 @@ public class Parser {
         Res<List<Ast.Declaration>> rde = paDeclarations(risas.next);
         Res<T3<String, Ast.Ident, String>> rend = c.seq3(c.forkw("end"), c.opt(pIdent), c.pSemi).pa(rde.next);
         must(rend, rde.next, "end [name] ;");
-        return new Res<>(new Ast.PackageSpec(ro.v, rde.v, ric.v), rend.next);
+        return new Res<Ast.PackageSpec>(new Ast.PackageSpec(ro.v, rde.v, ric.v), rend.next);
     }
 
     public Pa<Ast.PackageSpec> pCRPackage = new Pa<Ast.PackageSpec>() {
@@ -1577,74 +1577,61 @@ public class Parser {
         }
         Res<String> rname = justkw.pa(r.next);
         Res r2 = c.pLabelEnd.pa(rname.next);
-        return new Res<>(rname.v, r2.next);
+        return new Res<String>(rname.v, r2.next);
     }
 
     public Res<Ast.Statement> parseStatement(Seq s) {
         Res<String> r = justkw.pa(s);
         if (r != null) {
-            switch (r.v) {
-                case "end":
-                case "exception": // exception block begins
-                case "when": // next exception list
-                case "else": // next exception list
-                case "elsif": // next exception list
-                    return null;
-                case "null":
-                    return new Res<Ast.Statement>(new Ast.NullStatement(), r.next);
-                case "savepoint":
-                    return paSavePoint(s);
-                case "rollback":
-                    return paRollback(s);
-                case "begin":
-                    return paBlock_committed(s);
-                case "declare":
-                    return paBlock_committed(s);
-                case "for":
-                    return paForLoop(s);
-                case "loop":
-                    return paSimpleLoop_comitted(s);
-                case "while":
-                    return paWhileLoopStatement(s);
-                case "case":
-                    return paCaseStatement(s);
-                case "raise":
-                    return paRaiseStatement(s);
-                case "return":
-                    return paReturnStatement(s);
-                case "open":
-                    return paOpenStatement(s);
-                case "close":
-                    return paCloseStatement(s);
-                case "if":
-                    return paIfStatement(s);
-                case "fetch":
-                    return paFetchStatement(s);
-                case "exit":
-                    return paExitStatement(s);
-                case "continue":
-                    return paContinueStatement(s);
-                case "pipe": /*row */
+            if (r.v.equals("end") || r.v.equals("exception") || r.v.equals("when") || r.v.equals("else") || r.v.equals("elsif")) {
+                return null;
+            } else if (r.v.equals("null")) {
+                return new Res<Statement>(new Ast.NullStatement(), r.next);
+            } else if (r.v.equals("savepoint")) {
+                return paSavePoint(s);
+            } else if (r.v.equals("rollback")) {
+                return paRollback(s);
+            } else if (r.v.equals("begin")) {
+                return paBlock_committed(s);
+            } else if (r.v.equals("declare")) {
+                return paBlock_committed(s);
+            } else if (r.v.equals("for")) {
+                return paForLoop(s);
+            } else if (r.v.equals("loop")) {
+                return paSimpleLoop_comitted(s);
+            } else if (r.v.equals("while")) {
+                return paWhileLoopStatement(s);
+            } else if (r.v.equals("case")) {
+                return paCaseStatement(s);
+            } else if (r.v.equals("raise")) {
+                return paRaiseStatement(s);
+            } else if (r.v.equals("return")) {
+                return paReturnStatement(s);
+            } else if (r.v.equals("open")) {
+                return paOpenStatement(s);
+            } else if (r.v.equals("close")) {
+                return paCloseStatement(s);
+            } else if (r.v.equals("if")) {
+                return paIfStatement(s);
+            } else if (r.v.equals("fetch")) {
+                return paFetchStatement(s);
+            } else if (r.v.equals("exit")) {
+                return paExitStatement(s);
+            } else if (r.v.equals("continue")) {
+                return paContinueStatement(s);
+            } else if (r.v.equals("pipe")) {
+                return paPipeRowStatement(s);
+            } else if (r.v.equals("execute")) {
+                return paExecuteImmediate(s);
+            } else if (r.v.equals("goto")) {
+                return paGotoStatement(s);
+            } else if (r.v.equals("forall")) {
+                return paForAllStatement(s);
+            } else if (r.v.equals("insert") || r.v.equals("update") || r.v.equals("delete") || r.v.equals("merge") || r.v.equals("select") || r.v.equals("with")) {// with q as (select * from dual) select dummy fromdual into bla from q:
+                // is a valid select sql statement, to be exact we should check
+                // that with is not a procedure or variable name
 
-                    return paPipeRowStatement(s);
-                case "execute": /* execute immediate */
-
-                    return paExecuteImmediate(s);
-
-                case "goto":
-                    return paGotoStatement(s);
-                case "forall":
-                    return paForAllStatement(s);
-                case "insert":
-                case "update":
-                case "delete":
-                case "merge":
-                case "select":
-                // with q as (select * from dual) select dummy fromdual into bla from q:
-                // is a valid select sql statement, to be exact we should check 
-                // that with is not a procedure or variable name 
-                case "with": // with q as (select * from dual) select dummy fromdual into bla from q:
-                    return paSQLStatement(s);
+                return paSQLStatement(s);
             }
         }
         return paAssignOrCallStatement(s);
@@ -1692,14 +1679,14 @@ public class Parser {
         if (r == null) {
             return null;
         }
-        List<Ast.Statement> l = new ArrayList<>();
+        List<Ast.Statement> l = new ArrayList<Statement>();
         while (true) {
             Res<String> r2 = c.pSemi.pa(r.next);
             must(r2, r.next, "expecting semi colon");
             l.add(r.v);
             r = paStatement(r2.next);
             if (r == null) {
-                return new Res<>(l, r2.next);
+                return new Res<List<Statement>>(l, r2.next);
             }
         }
     }
@@ -1714,7 +1701,7 @@ public class Parser {
             if (r == null) {
                 return null;
             }
-            return new Res<>(new Ast.QualId(r.v), r.next);
+            return new Res<Ast.QualId>(new Ast.QualId(r.v), r.next);
         }
     };
 
@@ -1738,15 +1725,15 @@ public class Parser {
         Res<String> r4 = pkw_then.pa(next);
         must(r4, next, "expecting then");
         Res<List<Ast.Statement>> rs = paStatementList(r4.next);
-        return new Res<>(new Ast.ExceptionHandler(el, rs.v), rs.next);
+        return new Res<Ast.ExceptionHandler>(new Ast.ExceptionHandler(el, rs.v), rs.next);
     }
 
     Res<Ast.ExceptionBlock> paExceptionBlockOption(Seq s) {
         Res<String> r = c.forkw("exception").pa(s);
         if (r == null) {
-            return new Res<>(null, s);
+            return new Res<Ast.ExceptionBlock>(null, s);
         }
-        List<Ast.ExceptionHandler> l = new ArrayList<>();
+        List<Ast.ExceptionHandler> l = new ArrayList<Ast.ExceptionHandler>();
         s = r.next;
         while (true) {
             Res<Ast.ExceptionHandler> re = paOneException(s);
@@ -1760,7 +1747,7 @@ public class Parser {
         if (l.isEmpty()) {
             throw new ParseException("expecting at least one exception  handler", s);
         }
-        List<Ast.ExceptionHandler> l2 = new ArrayList<>();
+        List<Ast.ExceptionHandler> l2 = new ArrayList<Ast.ExceptionHandler>();
         for (int i = 0; i < l.size() - 1; i++) {
             if (l.get(i).exceptions == null) {
                 throw new ParseException("others must be last exception block", s);
@@ -1775,7 +1762,7 @@ public class Parser {
             l2.add(l.get(l.size() - 1));
             others = null;
         }
-        return new Res<>(new Ast.ExceptionBlock(l2, others), s);
+        return new Res<Ast.ExceptionBlock>(new Ast.ExceptionBlock(l2, others), s);
     }
 
     Res<T2<List<Ast.Statement>, Ast.ExceptionBlock>> paBody(Seq s) {
@@ -1787,13 +1774,13 @@ public class Parser {
         must(rs, r.next, "statement list");
         Res<Ast.ExceptionBlock> reb = paExceptionBlockOption(rs.next);
         Res rend = c.mustp(c.seq2(pkw_end, c.opt(pIdent)), "expect end").pa(reb.next);
-        return new Res<>(new T2<>(rs.v, reb.v), rend.next);
+        return new Res<T2<List<Statement>, Ast.ExceptionBlock>>(new T2<List<Statement>, Ast.ExceptionBlock>(rs.v, reb.v), rend.next);
     }
 
     Res<List<Ast.Declaration>> paDeclareSectionOption(Seq s) {
         Res<String> r = pkw_declare.pa(s);
         if (r == null) {
-            return new Res<>(null, s);
+            return new Res<List<Ast.Declaration>>(null, s);
         }
         return paDeclarations(r.next);
     }
@@ -1814,7 +1801,7 @@ public class Parser {
         Res<List<Ast.Statement>> r2 = paStatementList(r1.next);
         Res re = c.mustp(pkw_end_loop, "expecting end loop").pa(r2.next);
         Res re2 = c.opt(pIdent).pa(re.next);
-        return new Res<>(r2.v, re2.next);
+        return new Res<List<Statement>>(r2.v, re2.next);
     }
 
     Res<Ast.Statement> paSimpleLoop_comitted(Seq s) {
@@ -1901,7 +1888,7 @@ public class Parser {
             m = null;
         }
 
-        List<Ast.ExprAndStatements> l = new ArrayList<>();
+        List<Ast.ExprAndStatements> l = new ArrayList<Ast.ExprAndStatements>();
         //next is the loop variable
         while (true) {
             Res<String> rw = pkw_when.pa(next);
@@ -2004,7 +1991,7 @@ public class Parser {
         Res<Expression> re = pExpr.pa(r.next);
         Res rt = c.mustp(pkw_then, "expecting then").pa(re.next);
         Res<List<Ast.Statement>> rsl = paStatementList(rt.next);
-        List<Ast.ExprAndStatements> l = new ArrayList<>();
+        List<Ast.ExprAndStatements> l = new ArrayList<Ast.ExprAndStatements>();
         l.add(new Ast.ExprAndStatements(re.v, rsl.v));
 
         Seq next = rsl.next;
@@ -2121,18 +2108,18 @@ public class Parser {
                     } else {
                         pt = r.v.paramModeType;
                     }
-                    return new Res<>(new Ast.ExecuteImmediateParameter(pt, rex.v), rex.next);
+                    return new Res<Ast.ExecuteImmediateParameter>(new Ast.ExecuteImmediateParameter(pt, rex.v), rex.next);
                 }
             };
 
     public Res<List<Ast.ExecuteImmediateParameter>> paUsingOption(Seq s) {
         Res r = pkw_using.pa(s);
         if (r == null) {
-            return new Res<>(null, s);
+            return new Res<List<Ast.ExecuteImmediateParameter>>(null, s);
         }
         Res<List<Ast.ExecuteImmediateParameter>> rexl = c.sep1(pExecuteImmediateParameter, c.pComma).pa(r.next);
         // or just return rexl ?
-        return new Res<>(rexl.v, rexl.next);
+        return new Res<List<Ast.ExecuteImmediateParameter>>(rexl.v, rexl.next);
     }
 
     public Res<Boolean> paIntoClause(Seq s) {
@@ -2142,13 +2129,13 @@ public class Parser {
             if (rinto == null) {
                 return null;
             }
-            return new Res<>(false, rinto.next);
+            return new Res<Boolean>(false, rinto.next);
         } else {
             Res rinto = pkw_into.pa(r.next);
             if (rinto == null) {
                 throw new ParseException("expecting into", s);
             }
-            return new Res<>(true, rinto.next);
+            return new Res<Boolean>(true, rinto.next);
         }
     }
 
@@ -2219,7 +2206,7 @@ public class Parser {
                 = paBody(rd.next);
         must(rse, rd.next, "expecting a begin");
         //Res rend = c.mustp(c.seq2(pkw_end, c.opt(pIdent)), "expect end").pa(rse.next);
-        return new Res<>(new Ast.Block(rd.v, rse.v.f1, rse.v.f2), rse.next);
+        return new Res<Ast.Block>(new Ast.Block(rd.v, rse.v.f1, rse.v.f2), rse.next);
     }
 
     public Res<Ast.Declaration> paProcedureDefinitionOrDeclaration(Seq s) {
@@ -2283,11 +2270,11 @@ public class Parser {
             if (pkw_begin.pa(rdecls.next) == null) {
                 Res rend = c.mustp(c.seq2(pkw_end, c.opt(pIdent)), "expect end").pa(rdecls.next);
                 Res rsemi = c.mustp(c.pSemi, "semi").pa(rend.next);
-                return new Res<>(new Ast.PackageBody(rn.v, rdecls.v, null, null), rsemi.next);
+                return new Res<Ast.PackageBody>(new Ast.PackageBody(rn.v, rdecls.v, null, null), rsemi.next);
             } else {
                 Res<T2<List<Ast.Statement>, Ast.ExceptionBlock>> rb = paBody(rdecls.next);
                 Res rsemi = c.mustp(c.pSemi, "semi").pa(rb.next);
-                return new Res<>(new Ast.PackageBody(rn.v, rdecls.v, rb.v.f1, rb.v.f2), rsemi.next);
+                return new Res<Ast.PackageBody>(new Ast.PackageBody(rn.v, rdecls.v, rb.v.f1, rb.v.f2), rsemi.next);
             }
         }
 
@@ -2311,6 +2298,6 @@ public class Parser {
         Res<Ast.PackageBody> rb = pCRPackageBody.pa(rslash.next);
         Res rslash2 = c.token(TokenType.Div).pa(rb.next);
         must(rslash2, rb.next, "slash");
-        return new T2<>(rs.v, rb.v);
+        return new T2<Ast.PackageSpec, Ast.PackageBody>(rs.v, rb.v);
     }
 }

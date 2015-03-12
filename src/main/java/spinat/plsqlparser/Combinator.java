@@ -84,7 +84,7 @@ public class Combinator {
             public Res<X> par(Seq s) {
                 Res<X> r = p.pa(s);
                 if (r == null) {
-                    return new Res<>(null, s);
+                    return new Res<X>(null, s);
                 } else {
                     return r;
                 }
@@ -103,9 +103,9 @@ public class Combinator {
             public Res<Boolean> par(Seq s) {
                 Res<X> r = p.pa(s);
                 if (r == null) {
-                    return new Res<>(false, s);
+                    return new Res<Boolean>(false, s);
                 } else {
-                    return new Res<>(true, r.next);
+                    return new Res<Boolean>(true, r.next);
                 }
             }
         };
@@ -121,7 +121,7 @@ public class Combinator {
             @Override
             public Res<String> par(Seq s) {
                 if (s.head().ttype == tt) {
-                    return new Res<>(s.head().str, s.tail());
+                    return new Res<String>(s.head().str, s.tail());
                 } else {
                     return null;
                 }
@@ -148,7 +148,7 @@ public class Combinator {
             @Override
             public Res<String> par(Seq s) {
                 if (s.head().ttype == TokenType.Ident && s.head().str.equalsIgnoreCase(kw)) {
-                    return new Res<>(s.head().str, s.tail());
+                    return new Res<String>(s.head().str, s.tail());
                 } else {
                     return null;
                 }
@@ -170,7 +170,7 @@ public class Combinator {
                 if (s.head().ttype == TokenType.Ident && s.head().str.equalsIgnoreCase(kw1)) {
                     Token t = s.tail().head();
                     if (t.ttype == TokenType.Ident && t.str.equalsIgnoreCase(kw2)) {
-                        return new Res<>(x, s.tail().tail());
+                        return new Res<String>(x, s.tail().tail());
                     } else {
                         return null;
                     }
@@ -189,12 +189,12 @@ public class Combinator {
         return new Pa<List<X>>() {
             @Override
             public Res<List<X>> par(Seq s) {
-                List<X> l = new ArrayList<>();
+                List<X> l = new ArrayList<X>();
                 Seq next = s;
                 while (true) {
                     Res<X> r = pa.pa(next);
                     if (r == null) {
-                        return new Res<>(l, next);
+                        return new Res<List<X>>(l, next);
                     }
                     l.add(r.v);
                     next = r.next;
@@ -207,7 +207,7 @@ public class Combinator {
         return new Pa<List<X>>() {
             @Override
             public Res<List<X>> par(Seq s) {
-                ArrayList<X> l = new ArrayList<>();
+                ArrayList<X> l = new ArrayList<X>();
                 Res<X> r = pa.pa(s);
                 if (r == null) {
                     return new Res<List<X>>(l, s);
@@ -267,7 +267,7 @@ public class Combinator {
         if (r3 == null) {
             throw new ParseException("expecting to parse ')' ", r2.next);
         }
-        return new Res<>(r2.v, r3.next);
+        return new Res<X>(r2.v, r3.next);
     }
 
     public <X, Y, Z> Pa<T3<X, Y, Z>> seq3(final Pa<X> px, final Pa<Y> py, final Pa<Z> pz) {
@@ -286,7 +286,7 @@ public class Combinator {
                 if (rz == null) {
                     return null;
                 }
-                return new Res<>(new T3<X, Y, Z>(rx.v, ry.v, rz.v), rz.next);
+                return new Res<T3<X, Y, Z>>(new T3<X, Y, Z>(rx.v, ry.v, rz.v), rz.next);
             }
         };
     }
@@ -311,7 +311,7 @@ public class Combinator {
                 if (ru == null) {
                     return null;
                 }
-                return new Res<>(new T4<A, B, C, D>(rx.v, ry.v, rz.v, ru.v), ru.next);
+                return new Res<T4<A, B, C, D>>(new T4<A, B, C, D>(rx.v, ry.v, rz.v, ru.v), ru.next);
             }
         };
     }

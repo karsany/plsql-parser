@@ -333,44 +333,42 @@ public class Scanner {
         this.istart = istart;
         if (this.start < len - 2) {
             String a = source.substring(this.start, this.start + 2);
-            switch (a) {
-                case "=>":
-                    return tok2(TokenType.Arrow);
-                case "<=":
-                    return tok2(TokenType.LEqual);
-                case ">=":
-                    return tok2(TokenType.GEqual);
-                case ":=":
-                    return tok2(TokenType.Assign);
-                case "<>":
-                    return tok2(TokenType.NEqual);
-                case "!=":
-                    return tok2(TokenType.NEqual);
-                case "||":
-                    return tok2(TokenType.StringAdd);
-                case "--":
-                    return tokx(TokenType.EOLineComment, scanEoLComment(this.start));
-                case "/*":
-                    return tokx(TokenType.MultiLineComment, scanMLComment(this.start));
-                case "**":
-                    return tok2(TokenType.Power);
-                case "..":
-                    return tok2(TokenType.DotDot);
-                case "<<":
-                    return tok2(TokenType.LabelStart);
-                case ">>":
-                    return tok2(TokenType.LabelEnd);
-                case "q'":
-                    return tokx(TokenType.QString, qString(this.start));
-                case "$$":
-                    return tokx(TokenType.DollarDollarIdent, scanDollarDollarIdent(this.start));
-                default:
-                    if (get(start) == '.' && isArabicDigit(get(start + 1))) {
-                        return tokx(TokenType.Float, scanFloat(this.start));
-                    } else {
-                        return check1();
-                    }
-
+            if (a.equals("=>")) {
+                return tok2(TokenType.Arrow);
+            } else if (a.equals("<=")) {
+                return tok2(TokenType.LEqual);
+            } else if (a.equals(">=")) {
+                return tok2(TokenType.GEqual);
+            } else if (a.equals(":=")) {
+                return tok2(TokenType.Assign);
+            } else if (a.equals("<>")) {
+                return tok2(TokenType.NEqual);
+            } else if (a.equals("!=")) {
+                return tok2(TokenType.NEqual);
+            } else if (a.equals("||")) {
+                return tok2(TokenType.StringAdd);
+            } else if (a.equals("--")) {
+                return tokx(TokenType.EOLineComment, scanEoLComment(this.start));
+            } else if (a.equals("/*")) {
+                return tokx(TokenType.MultiLineComment, scanMLComment(this.start));
+            } else if (a.equals("**")) {
+                return tok2(TokenType.Power);
+            } else if (a.equals("..")) {
+                return tok2(TokenType.DotDot);
+            } else if (a.equals("<<")) {
+                return tok2(TokenType.LabelStart);
+            } else if (a.equals(">>")) {
+                return tok2(TokenType.LabelEnd);
+            } else if (a.equals("q'")) {
+                return tokx(TokenType.QString, qString(this.start));
+            } else if (a.equals("$$")) {
+                return tokx(TokenType.DollarDollarIdent, scanDollarDollarIdent(this.start));
+            } else {
+                if (get(start) == '.' && isArabicDigit(get(start + 1))) {
+                    return tokx(TokenType.Float, scanFloat(this.start));
+                } else {
+                    return check1();
+                }
             }
         } else {
             return check1();
@@ -391,7 +389,7 @@ public class Scanner {
     }
 
     public static ArrayList<Token> scanAll(String s) {
-        ArrayList<Token> res = new ArrayList<>();
+        ArrayList<Token> res = new ArrayList<Token>();
         int len = s.length();
         Scanner sc = new Scanner(s);
         int istart = 0;

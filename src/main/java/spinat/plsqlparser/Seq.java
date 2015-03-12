@@ -10,7 +10,7 @@ public final class Seq {
     private final int end;
 
     public Seq(List<Token> l) {
-        this.l = new ArrayList<>();
+        this.l = new ArrayList<Token>();
         this.l.addAll(l);
         start = 0;
         end = this.l.size();
