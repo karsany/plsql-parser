@@ -2,3 +2,5 @@
 /dist/
 /nbproject/private/**
 /**/*~
+/nbproject
+build.xml
