@@ -2,6 +2,7 @@ package spinat.plsqlparser;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertNotNull;
@@ -185,53 +186,16 @@ public class TestParser {
         tpa(p.pDeclaration, "subtype a is integer not null");
     }
 
-    public void testPackage(String filename) {
+    public void testPackage(String filename) throws IOException {
         Parser p = new Parser();
         String s = Util.loadFile(filename);
         tpa(p.pCRPackage, s);
     }
 
-    public void testPackageBody(String filename) {
+    public void testPackageBody(String filename) throws IOException {
         Parser p = new Parser();
         String s = Util.loadFile(filename);
         tpa(p.pCRPackageBody, s);
     }
 
-    @Test
-    public void test5() {
-        testPackage("c:/users/rav/documents/plsql-repo/PL_FPDF.pks");
-        testPackage("c:/users/rav/documents/plsql-repo/logger.pks");
-        testPackage("c:/users/rav/documents/plsql-repo/excp.pks");
-        testPackage("c:/users/rav/documents/plsql-repo/io.pks");
-        testPackage("c:/users/rav/documents/plsql-repo/env.pks");
-    }
-
-    @Test
-    public void test6() {
-        testPackageBody("c:/users/rav/documents/plsql-repo/plog.pkb");
-        testPackageBody("c:/users/rav/documents/plsql-repo/plog_out_dbms_output.pkb");
-    }
-
-    @Test
-    public void test7() throws Exception {
-        Path dir = Paths.get("c:/users/rav/documents/plsql-repo/demo_feuerstein");
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.pks")) {
-            for (Path entry : stream) {
-                System.out.println(entry.getFileName());
-                testPackage(dir.resolve(entry).toString());
-            }
-        }
-    }
-
-    @Test
-    public void test8() throws Exception {
-        Path dir = Paths.get("c:/users/rav/documents/plsql-repo/demo_feuerstein");
-        try (DirectoryStream<Path> stream
-                = Files.newDirectoryStream(dir, "*.pkb")) {
-            for (Path entry : stream) {
-                System.out.println(entry.getFileName());
-                testPackageBody(dir.resolve(entry).toString());
-            }
-        }
-    }
 }

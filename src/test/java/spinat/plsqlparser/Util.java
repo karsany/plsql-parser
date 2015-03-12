@@ -1,18 +1,14 @@
 package spinat.plsqlparser;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 public class Util {
 
-    public static String loadFile(String filename) {
-        Path p = FileSystems.getDefault().getPath(filename);
-        try {
-            byte[] b = java.nio.file.Files.readAllBytes(p);
-            return new String(b, StandardCharsets.ISO_8859_1);
-        } catch (Exception ex) {
-            throw new RuntimeException("wrapped", ex);
-        }
+    public static String loadFile(String filename) throws IOException {
+        return IOUtils.toString(FileUtils.openInputStream(new File(filename)));
     }
 }
