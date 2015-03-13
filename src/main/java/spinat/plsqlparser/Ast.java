@@ -808,7 +808,7 @@ public class Ast {
         }
     }
 
-    public static class PackageSpec {
+    public static class PackageSpec implements Visitable {
 
         public final ObjectName objectname;
         public final List<Declaration> declarations;
@@ -819,6 +819,11 @@ public class Ast {
             this.declarations = declarations;
             this.objectname = objectname;
             this.invokerclause = invokerclause;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
         }
     }
 
@@ -831,11 +836,15 @@ public class Ast {
         }
     }
 
-    public static abstract class Statement extends Ranged {
+    public static abstract class Statement extends Ranged implements Visitable {
     }
 
     public static class NullStatement extends Statement {
 
+        @Override
+        public void accept(Visitor visitor) {
+
+        }
     }
 
     public static class GotoStatement extends Statement {
@@ -844,6 +853,11 @@ public class Ast {
 
         public GotoStatement(String label) {
             this.label = label;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
         }
     }
 
@@ -854,6 +868,11 @@ public class Ast {
         public SqlStatement(List<Token> tokens) {
             this.tokens = tokens;
         }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
+        }
     }
 
     public static class ProcedureCall extends Statement {
@@ -862,6 +881,13 @@ public class Ast {
 
         public ProcedureCall(List<CallPart> callparts) {
             this.callparts = callparts;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            for (CallPart callPart : callparts)
+                visitor.visit(callPart);
+            visitor.visit(this);
         }
     }
 
@@ -873,6 +899,13 @@ public class Ast {
         public Assignment(LValue lvalue, Expression expression) {
             this.lvalue = lvalue;
             this.expression = expression;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(lvalue);
+            visitor.visit(expression);
+            visitor.visit(this);
         }
     }
 
@@ -888,7 +921,7 @@ public class Ast {
         }
     }
 
-    public static class ExceptionBlock {
+    public static class ExceptionBlock implements Visitable {
 
         public final List<ExceptionHandler> handlers;
         public final List<Statement> othershandler;
@@ -897,6 +930,17 @@ public class Ast {
                 List<Statement> othershandler) {
             this.handlers = handlers;
             this.othershandler = othershandler;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            for (ExceptionHandler exceptionHandler : handlers)
+                visitor.visit(exceptionHandler);
+
+            for (Statement statement : othershandler)
+                visitor.visit(statement);
+
+            visitor.visit(this);
         }
     }
 
@@ -907,6 +951,12 @@ public class Ast {
         public BlockStatement(Block block) {
             this.block = block;
         }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(block);
+            visitor.visit(this);
+        }
     }
 
     public static class Savepoint extends Statement {
@@ -915,6 +965,12 @@ public class Ast {
 
         public Savepoint(Ident name) {
             this.name = name;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(name);
+            visitor.visit(this);
         }
     }
 
@@ -925,6 +981,12 @@ public class Ast {
         public Rollback(Ident name) {
             this.name = name;
         }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(name);
+            visitor.visit(this);
+        }
     }
 
     public static class BasicLoopStatement extends Statement {
@@ -933,6 +995,13 @@ public class Ast {
 
         public BasicLoopStatement(List<Ast.Statement> statements) {
             this.statements = statements;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            for (Statement statement : statements)
+                visitor.visit(statement);
+            visitor.visit(this);
         }
     }
 
@@ -947,6 +1016,16 @@ public class Ast {
             this.sql = sql;
             this.statements = statements;
         }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(iterator);
+            for (Token token : sql)
+                visitor.visit(token);
+            for (Statement statement : statements)
+                visitor.visit(statement);
+            visitor.visit(this);
+        }
     }
 
     public static class WhileLoopStatement extends Statement {
@@ -957,6 +1036,15 @@ public class Ast {
         public WhileLoopStatement(Expression condition, List<Statement> statements) {
             this.condition = condition;
             this.statements = statements;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(condition);
+            for (Statement statement : statements)
+                visitor.visit(statement);
+
+            visitor.visit(this);
         }
     }
 
@@ -979,6 +1067,16 @@ public class Ast {
             this.to = to;
             this.statements = statements;
         }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(iterator);
+            visitor.visit(from);
+            visitor.visit(to);
+            for (Statement statement : statements)
+                visitor.visit(statement);
+            visitor.visit(this);
+        }
     }
 
     public static class CursorLoopStatement extends Statement {
@@ -993,6 +1091,15 @@ public class Ast {
             this.iterator = iterator;
             this.expr = expr;
             this.statements = statements;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit(iterator);
+            visitor.visit(expr);
+            for (Statement statement : statements)
+                visitor.visit(statement);
+            visitor.visit(this);
         }
     }
 
@@ -1017,6 +1124,11 @@ public class Ast {
             this.match = match;
             this.branches = branches;
             this.defaultbranch = defaultbranch;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visit();
         }
     }
 
@@ -1241,7 +1353,7 @@ public class Ast {
         }
     }
 
-    public static class PackageBody {
+    public static class PackageBody implements Visitable {
 
         public final ObjectName name;
         public final List<Declaration> declarations;
@@ -1255,6 +1367,18 @@ public class Ast {
             this.declarations = declarations;
             this.statements = statements;
             this.exceptionBlock = exceptionBlock;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            for (Declaration declaration : declarations) {
+                visitor.visit(declaration);
+            }
+            for (Statement statement : statements) {
+
+                visitor.visit(statement);
+            }
+            visitor.visit(this);
         }
     }
 
