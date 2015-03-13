@@ -1554,10 +1554,10 @@ public class Parser {
             next = rlab.next;
         }
         Res<Ast.Statement> r = parseStatement(next);
-        if (r == null || r.v.getStart() >= 0) {
+        if (r == null /*|| r.v.getStart() >= 0*/) {
             return r;
         } else {
-            r.v.setRange(s.head().pos, r.next.head().ipos);
+            //r.v.setRange(s.head().pos, r.next.head().ipos);
             return r;
         }
     }
